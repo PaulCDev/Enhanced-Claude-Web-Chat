@@ -89,10 +89,39 @@
   const CHIP_CLASS = 'cwt-project-chip';
   let chatsByUuid = null;
 
+  const HUES_KEY = 'cwt.projectHues';
+
+  const loadProjectHues = () => {
+    try {
+      const raw = localStorage.getItem(HUES_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const projectHues = loadProjectHues();
+
+  // Circular distance between two hues, 0..180.
+  const hueGap = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
+
+  // Returns a stable hue for a project: random on first sight, then persisted.
   const projectHue = (uuid) => {
-    let h = 0;
-    for (let i = 0; i < uuid.length; i++) h = (h * 31 + uuid.charCodeAt(i)) >>> 0;
-    return h % 360;
+    if (typeof projectHues[uuid] === 'number') return projectHues[uuid];
+
+    const used = Object.values(projectHues);
+    let hue = Math.floor(Math.random() * 360);
+    // Try a few times to keep new colours visually distinct from existing ones.
+    for (let i = 0; i < 16 && used.some((h) => hueGap(hue, h) < 25); i++) {
+      hue = Math.floor(Math.random() * 360);
+    }
+
+    projectHues[uuid] = hue;
+    try {
+      localStorage.setItem(HUES_KEY, JSON.stringify(projectHues));
+    } catch {}
+    return hue;
   };
 
   const tagSidebarChats = () => {

@@ -30,9 +30,42 @@ The extension runs a single content script on `https://claude.ai/*`:
 
 A `MutationObserver` re-applies the tweaks as claude.ai re-renders its UI.
 
-## Permissions & privacy
+## Verifying it runs locally
 
-The extension only runs on `claude.ai`. It makes requests to claude.ai's own API using your existing session cookies and does not transmit any data to third parties.
+This extension is designed to be easy to audit. If you're concerned about privacy,
+you can confirm for yourself that it sends nothing to third parties:
+
+1. **Read the source.** It's three unminified files — `content.js` (~250 lines),
+   `manifest.json`, and `styles.css`. There is no build step and no bundled
+   dependencies, so the code in this repo is exactly what runs in your browser.
+
+2. **Check the manifest.** `manifest.json` declares no `permissions` and no
+   `host_permissions`, and only runs on `https://claude.ai/*`. Your browser's
+   extension details page will also show that its only access is to `claude.ai`.
+
+3. **Watch the Network tab (the definitive check).** Open claude.ai, open DevTools
+   (F12) → **Network** tab, then reload the page and use the extension. Every
+   request it makes goes to `claude.ai` itself — you will not see requests to any
+   other domain. The only API calls it makes are to claude.ai's own endpoints
+   (`/api/organizations` and `/api/.../chat_conversations`).
+
+4. **It can't silently update.** Because you load it unpacked from this repo, it
+   has no auto-update channel. The code you reviewed is the code that keeps running
+   until you manually pull changes.
+
+### What it accesses, and where that data goes
+
+The extension reads your chat list (chat names, summaries, and project names) via
+claude.ai's own API, using your existing logged-in session. This is used purely to
+draw the colored project chips in the sidebar. That data:
+
+- never leaves your browser — it is held in memory and logged to the DevTools
+  console for inspection;
+- is not sent to the extension's author or any third party;
+- the only thing persisted is your sidebar width and a per-project color map, stored
+  in `localStorage` on claude.ai (`cwt.sidebarWidth`, `cwt.projectHues`).
+
+No credentials, cookies, or message contents are collected, stored, or transmitted.
 
 ## Files
 
