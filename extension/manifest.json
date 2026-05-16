@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Claude Web Tweaks",
+  "version": "0.1.0",
+  "description": "Customizes the Claude.ai interface. Adds a drag handle to resize the sidebar.",
+  "content_scripts": [
+    {
+      "matches": ["https://claude.ai/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
